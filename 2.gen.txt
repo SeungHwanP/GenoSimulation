@@ -1,17 +1,18 @@
 for chr in {1..22};do
-sbatch -n 1 --begin=now+5hour --mem=30G -o /storage/lab/psh/simulation_n10K_p933K/2.gen/train_Chr"$chr".log -J tr_$chr --wrap="qctool \
--g /storage/lab/psh/simulation_n10K_p933K/1.bgen/train_Chr"$chr".bgen \
--s /storage/lab/psh/simulation_n10K_p933K/1.bgen/train_Chr"$chr".sample \
--og /storage/lab/psh/simulation_n10K_p933K/2.gen/train_Chr"$chr".gen \
--os /storage/lab/psh/simulation_n10K_p933K/2.gen/train_Chr"$chr".sample"
+qctool \
+-g /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/train_Chr"$chr".bgen \
+-s /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/train_Chr"$chr".sample \
+-og /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/train_Chr"$chr".gen \
+-os /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/train_Chr"$chr".sample \
+-log /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/train_Chr"$chr".log
 done
 
-
 for chr in {1..22};do
-sbatch -n 1 --begin=now+5hour --mem=30G -o /storage/lab/psh/simulation_n10K_p933K/2.gen/test_Chr"$chr".log -J te_$chr --wrap="qctool \
--g /storage/lab/psh/simulation_n10K_p933K/1.bgen/test_Chr"$chr".bgen \
--s /storage/lab/psh/simulation_n10K_p933K/1.bgen/test_Chr"$chr".sample \
--og /storage/lab/psh/simulation_n10K_p933K/2.gen/test_Chr"$chr".gen \
--os /storage/lab/psh/simulation_n10K_p933K/2.gen/test_Chr"$chr".sample"
+qctool \
+-g /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/test_Chr"$chr".bgen \
+-s /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/test_Chr"$chr".sample \
+-og /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/test_Chr"$chr".gen \
+-os /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/test_Chr"$chr".sample \
+-log /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/test_Chr"$chr".log
 done
 

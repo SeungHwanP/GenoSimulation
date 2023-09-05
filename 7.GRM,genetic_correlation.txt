@@ -1,0 +1,25 @@
+#GRM
+mkdir -p /storage/lab/psh/simulation_n10K_p10K_continous/7.GRM,GC
+gcta64 \
+--bfile /storage/lab/psh/simulation_n10K_p10K_continous/4.plink/train \
+--make-grm \
+--thread-num 10 \
+--out /storage/lab/psh/simulation_n10K_p10K_continous/7.GRM,GC/1.GRM
+
+#heritability
+for seed in {1..100};do
+mkdir -p /storage/lab/psh/simulation_n10K_p10K_continous/7.GRM,GC/"$seed"
+for nsnp in 1 {10..100..10};do
+for phe in 1 2;do
+gcta64 \
+--reml \
+--grm /storage/lab/psh/simulation_n10K_p10K_continous/7.GRM,GC/1.GRM \
+--pheno /storage/lab/psh/simulation_n10K_p10K_continous/6.phenotype/"$seed"/1.pheno_p"$nsnp"00_train.phe \
+--mpheno "$phe" \
+--thread-num 10 \
+--reml-pred-rand \
+--out /storage/lab/psh/simulation_n10K_p10K_continous/7.GRM,GC/"$seed"/GC_p"$nsnp"00_"$phe"
+done
+done
+done
+
