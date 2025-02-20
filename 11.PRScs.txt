@@ -1,0 +1,169 @@
+#####################################
+# step0 : make sumstat
+#####################################
+rm(list=ls())
+hm3 <- fread("/storage0/lab/psh/PRScs/ldblk_ukbb_eur/snpinfo_ukbb_hm3")
+hm3$V7 <- paste0(hm3$V1,"_",hm3$V3,"_",hm3$V4,"_",hm3$V5)
+
+seed <- 1
+nsnp <- 100
+phe <- 1
+
+for(seed in 1:100){
+  print(seed)
+  for(nsnp in c(100,seq(1000,10000,1000))){
+    for(phe in 1:2){
+      bolt <- fread(glue("zcat /storage/lab/psh/simulation_n10K_p10K_continuous/7.bolt/{seed}/Bolt_p{nsnp}_{phe}.bgen.stats.gz"))
+      bolt1 <- data.frame(SNP=paste0(bolt$CHR,"_",bolt$BP,"_",bolt$ALLELE1,"_",bolt$ALLELE0),
+                          A1=bolt$ALLELE1,A0=bolt$ALLELE0,BETA=bolt$BETA,P=bolt$P_BOLT_LMM,chr=bolt$CHR,bp=bolt$BP)
+      bolt2 <- data.frame(SNP=paste0(bolt$CHR,"_",bolt$BP,"_",bolt$ALLELE0,"_",bolt$ALLELE1),
+                          A1=bolt$ALLELE1,A0=bolt$ALLELE0,BETA=bolt$BETA,P=bolt$P_BOLT_LMM,chr=bolt$CHR,bp=bolt$BP)
+      
+      bolt1 <- merge(hm3[,c("V7","V2")],bolt1,by.x="V7",by.y="SNP",all.y=T)
+      bolt2 <- merge(hm3[,c("V7","V2")],bolt2,by.x="V7",by.y="SNP",all.y=T)
+      
+      bolt <- data.frame(SNP=ifelse(!is.na(bolt1$V2),bolt1$V2,ifelse(!is.na(bolt2$V2),bolt2$V2,bolt2$V7)),
+                         A1=bolt1$A1,A0=bolt1$A0,BETA=bolt1$BETA,P=bolt1$P,CHR=bolt1$chr,BP=bolt1$bp)
+      bolt <- bolt[order(bolt$CHR,bolt$BP),-c(6:7)]
+      
+      system(glue("mkdir -p /storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/0.sumstat/{seed}/"))
+      fwrite(bolt,glue("/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/0.sumstat/{seed}/p{nsnp}_{phe}.txt"),
+             row.names=F,quote=F,sep="\t",col.names=T)
+      
+    }
+  }
+}
+
+
+#####################################
+# step1 : run PRScs
+#####################################
+### PRScs-auto
+for seed in {1..100};do
+mkdir -p /storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/1.PRScs_auto/
+echo $seed
+for nsnp in 100 {1000..10000..1000};do
+echo $nsnp
+mkdir -p /storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/1.PRScs_auto/"$seed"
+for phe in 1 2;do
+echo $phe
+python3 /storage0/lab/psh/PRScs/PRScs.py \
+--ref_dir=/storage0/lab/psh/PRScs/ldblk_ukbb_eur \
+--bim_prefix=/storage/lab/psh/simulation_n10K_p10K_continuous/5.plink/test_PRScs \
+--sst_file=/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/0.sumstat/"$seed"/p"$nsnp"_"$phe".txt \
+--n_gwas=10000 \
+--seed=1027 \
+--out_dir=/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/1.PRScs_auto/"$seed"/p"$nsnp"_"$phe".out
+done
+done
+done
+
+###  PRScs-manual
+for seed in {1..100};do
+mkdir -p /storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/1.PRScs/"$seed"
+echo $seed
+for nsnp in 100 {1000..10000..1000};do
+echo $nsnp
+for phe in 1 2;do
+for phi in 1 0.01 0.09 0.0001 0.0009 0.000001 0.000009;do
+echo $phe
+python3 /storage0/lab/psh/PRScs/PRScs.py \
+--ref_dir=/storage0/lab/psh/PRScs/ldblk_ukbb_eur \
+--bim_prefix=/storage/lab/psh/simulation_n10K_p10K_continuous/5.plink/test_PRScs \
+--sst_file=/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/0.sumstat/"$seed"/p"$nsnp"_"$phe".txt \
+--n_gwas=10000 \
+--phi="$phi" \
+--seed=1027 \
+--out_dir=/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/1.PRScs/"$seed"/p"$nsnp"_"$phe"_"$phi".out
+done
+done
+done
+done
+
+
+#####################################
+# step2 : calculate score
+#####################################
+# make pheno file
+rm(list=ls())
+setwd("/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/")
+library(data.table)
+library(glue)
+ID <- fread("/storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/testing/ukb_imp_chr1_testing.sample")[-1,1:2]
+colnames(ID) <- c("FID","IID")
+system("mkdir -p 0.phenotype")
+for(seed in 1:100){
+  print(seed)
+  phe1 <- phe2 <- ID
+  for(nsnp in c(100,seq(1000,10000,1000))){
+    phe <- fread(glue("/storage/lab/psh/simulation_n10K_p10K_continuous/6.phenotype/{seed}/1.pheno_p{nsnp}_test.phe"))[,-2]
+    phe1 <- merge(phe1,phe[,c("FID","phe1")],by="FID",sort=F);colnames(phe1)[ncol(phe1)] <- glue("p{nsnp}")
+    phe2 <- merge(phe2,phe[,c("FID","phe2")],by="FID",sort=F);colnames(phe2)[ncol(phe2)] <- glue("p{nsnp}")
+  }
+  fwrite(phe1,glue("0.phenotype/{seed}_phe1.txt"),row.names=F,quote=F,sep="\t",col.names=T)
+  fwrite(phe2,glue("0.phenotype/{seed}_phe2.txt"),row.names=F,quote=F,sep="\t",col.names=T)
+  rm(phe1,phe2)
+}
+
+### PRScs-auto
+setwd("/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/")
+rm(list=ls())
+library(data.table)
+library(glue)
+system(glue("mkdir -p /storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/2.score_PRScs_auto"))
+
+for(seed in 1:100){
+  system(glue("mkdir -p 2.score_PRScs_auto/{seed}"))
+  for(phe in 1:2){
+    for(nsnp in c(100,seq(1000,10000,1000))){
+      system(glue("/storage0/program/plink1.9 --bfile ../5.plink/test --pheno 0.phenotype/{seed}_phe{phe}.txt --pheno-name p{nsnp} --keep-allele-order --score 1.PRScs_auto/{seed}/p{nsnp}_{phe}.out 2 4 6 sum --out 2.score_PRScs_auto/{seed}/p{nsnp}_{phe}"))
+    }
+  }
+}
+
+###  PRScs-manual
+setwd("/storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/")
+rm(list=ls())
+library(data.table)
+library(glue)
+system(glue("mkdir -p /storage/lab/psh/simulation_n10K_p10K_continuous/11.PRScs/2.score_PRScs"))
+options(scipen=7)
+for(seed in 1:100){
+  system(glue("mkdir -p 2.score_PRScs/{seed}"))
+  for(phe in 1:2){
+    for(nsnp in c(100,seq(1000,10000,1000))){
+      for(phi in c(1,0.01,0.0001,0.000001,0.09,0.0009,0.000009))
+      system(glue("/storage0/program/plink1.9 --bfile ../5.plink/test --pheno 0.phenotype/{seed}_phe{phe}.txt --pheno-name p{nsnp} --keep-allele-order --score 1.PRScs/{seed}/p{nsnp}_{phe}_phi{phi}.out 2 4 6 sum --out 2.score_PRScs/{seed}/p{nsnp}_{phe}_phi{phi}"))
+    }
+  }
+}
+
+#####################################
+# step3 : make results
+#####################################
+setwd("/storage0/lab/psh/simulation/simulation_n10K_p10K_continuous/11.PRScs/")
+rm(list=ls())
+library(data.table)
+library(glue)
+
+system(glue("mkdir -p /storage0/lab/psh/simulation/simulation_n10K_p10K_continuous/11.PRScs/2.score_PRScs"))
+options(scipen=7)
+res1 <- NULL
+for(phe in 1:2){
+  res2 <- NULL
+  for(nsnp in c(100,seq(1000,10000,1000))){
+    res3 <- NULL
+    for(seed in 1:100){
+      res3 <- c(res3,max(unlist(lapply(c(1,0.01,0.0001,0.000001),function(phi){
+        tmp <- fread(glue("2.score_PRScs/{seed}/p{nsnp}_{phe}_phi{phi}.profile"))[,c("PHENO","SCORESUM")]
+        cor(tmp$PHENO,tmp$SCORESUM)^2
+      }))))
+    }
+    res2 <- c(res2,mean(res3))
+    print(res2)
+  }
+  res1 <- rbind(res1,res2)
+}
+colnames(res1) <- paste0(c(1,seq(10,100,10)),"%")
+
+fwrite(res1,"/storage0/lab/psh/simulation/simulation_n10K_p10K_continuous/11.PRScs/result.csv",row.names=F,quote=F,sep=",",col.names=T)

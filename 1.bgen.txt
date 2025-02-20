@@ -1,23 +1,28 @@
+mkdir -p /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/training/
+mkdir -p /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/testing/
+
+###  train-data
 for chr in {1..22};do
 qctool \
--g /storage/dataUKB/imputation/ukb_imp_chr"$chr"_v3.bgen \
--s /storage/dataUKB/imputation/ukb14048_imp_chr1_v3_s487395.sample \
--incl-snpids /storage/lab/psh/simulation_n10K_p10K_continuous/0.list/SNPid_Chr"$chr".txt \
--incl-samples /storage/lab/psh/simulation_n10K_p10K_continuous/0.list/id_train.txt \
--og /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/train_Chr"$chr".bgen \
--os /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/train_Chr"$chr".sample \
--log /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/train_Chr"$chr".log
+-g /storage0/dataUKB/imputation/ukb22828_c"$chr"_b0_v3.bgen \
+-s /storage0/dataUKB/imputation/ukb22828_c1_b0_v3_s487202.sample \
+-incl-snpids /storage0/lab/psh/simulation_n10K_p10K_continuous/0.list/SNPid_Chr"$chr".txt \
+-incl-samples /storage0/lab/psh/simulation_n10K_p10K_continuous/0.list/id_train.txt \
+-og /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/training/ukb_imp_chr"$chr"_training.bgen \
+-os /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/training/ukb_imp_chr"$chr"_training.sample \
+-log /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/training/ukb_imp_chr"$chr"_training.log
 done
 
 
+###  test-data
 for chr in {1..22};do
 qctool \
--g /storage/dataUKB/imputation/ukb_imp_chr"$chr"_v3.bgen \
--s /storage/dataUKB/imputation/ukb14048_imp_chr1_v3_s487395.sample \
--incl-snpids /storage/lab/psh/simulation_n10K_p10K_continuous/0.list/SNPid_Chr"$chr".txt \
--incl-samples /storage/lab/psh/simulation_n10K_p10K_continuous/0.list/id_test.txt \
--og /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/test_Chr"$chr".bgen \
--os /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/test_Chr"$chr".sample \
--log /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/test_Chr"$chr".log
+-g /storage0/dataUKB/imputation/ukb22828_c"$chr"_b0_v3.bgen \
+-s /storage0/dataUKB/imputation/ukb22828_c1_b0_v3_s487202.sample \
+-incl-snpids /storage0/lab/psh/simulation_n10K_p10K_continuous/0.list/SNPid_Chr"$chr".txt \
+-incl-samples /storage0/lab/psh/simulation_n10K_p10K_continuous/0.list/id_test.txt \
+-og /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/testing/ukb_imp_chr"$chr"_testing.bgen \
+-os /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/testing/ukb_imp_chr"$chr"_testing.sample \
+-log /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/testing/ukb_imp_chr"$chr"_testing.log
 done
 

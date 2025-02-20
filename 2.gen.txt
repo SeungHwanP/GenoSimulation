@@ -1,18 +1,23 @@
+mkdir -p /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/training/
+mkdir -p /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/testing/
+
+###  train-data
 for chr in {1..22};do
 qctool \
--g /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/train_Chr"$chr".bgen \
--s /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/train_Chr"$chr".sample \
--og /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/train_Chr"$chr".gen \
--os /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/train_Chr"$chr".sample \
--log /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/train_Chr"$chr".log
+-g /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/training/ukb_imp_chr"$chr"_training.bgen \
+-s /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/training/ukb_imp_chr"$chr"_training.sample \
+-og /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/training/ukb_imp_chr1_training.gen.gen \
+-os /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/training/ukb_imp_chr1_training.gen.sample \
+-log /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/training/ukb_imp_chr1_training.gen.log
 done
 
+###  test-data
 for chr in {1..22};do
 qctool \
--g /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/test_Chr"$chr".bgen \
--s /storage/lab/psh/simulation_n10K_p10K_continuous/1.bgen/test_Chr"$chr".sample \
--og /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/test_Chr"$chr".gen \
--os /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/test_Chr"$chr".sample \
--log /storage/lab/psh/simulation_n10K_p10K_continuous/2.gen/test_Chr"$chr".log
+-g /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/testing/ukb_imp_chr"$chr"_testing.bgen \
+-s /storage0/lab/psh/simulation_n10K_p10K_continuous/1.bgen/testing/ukb_imp_chr"$chr"_testing.sample \
+-og /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/testing/ukb_imp_chr"$chr"_testing.gen \
+-os /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/testing/ukb_imp_chr"$chr"_testing.sample \
+-log /storage0/lab/psh/simulation_n10K_p10K_continuous/2.gen/testing/ukb_imp_chr"$chr"_testing.log
 done
 

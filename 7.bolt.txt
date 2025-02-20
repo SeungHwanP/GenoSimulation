@@ -1,0 +1,25 @@
+# run bolt
+for seed in {1..100};do
+mkdir -p /storage0/lab/psh/simulation_n10K_p10K_continuous/7.bolt/"$seed"
+for nsnp in 1 {10..100..10};do
+for phe in 1 2;do
+bolt \
+--bfile=/storage0/lab/psh/simulation_n10K_p10K_continuous/5.plink/train \
+--phenoFile=/storage0/lab/psh/simulation_n10K_p10K_continuous/6.phenotype/"$seed"/1.pheno_p"$nsnp"00_train.phe \
+--phenoCol=phe"$phe" \
+--covarMaxLevels=30 \
+--LDscoresFile=/storage0/dataUKB/phenotype/LDSCORE.1000G_EUR.tab.gz \
+--LDscoresMatchBp \
+--maxModelSnps=10000000 \
+--geneticMapFile=/storage0/dataUKB/phenotype/genetic_map_hg19.txt.gz \
+--lmmForceNonInf \
+--numThreads=10 \
+--bgenFile=/storage0/lab/psh/simulation_n10K_p10K_continuous/5.plink/train.bgen \
+--sampleFile=/storage0/lab/psh/simulation_n10K_p10K_continuous/5.plink/train.sample \
+--bgenMinMAF=0 \
+--statsFile=/storage0/lab/psh/simulation_n10K_p10K_continuous/7.bolt/"$seed"/Bolt_p"$nsnp"00_"$phe".stats.gz \
+--statsFileBgenSnps=/storage0/lab/psh/simulation_n10K_p10K_continuous/7.bolt/"$seed"/Bolt_p"$nsnp"00_"$phe".bgen.stats.gz \
+--verboseStats 2>&1 | tee /storage0/lab/psh/simulation_n10K_p10K_continuous/7.bolt/"$seed"/Bolt_p"$nsnp"00_"$phe".log -J "$seed"_"$nsnp"_"$phe"
+done
+done
+done

@@ -1,15 +1,16 @@
-system("mkdir -p /storage/lab/psh/simulation_n10K_p10K_continuous/4.plink")
-setwd("/storage/lab/psh/simulation_n10K_p10K_continuous/4.plink")
+system("mkdir -p /storage0/lab/psh/simulation_n10K_p10K_continuous/5.plink")
+setwd("/storage0/lab/psh/simulation_n10K_p10K_continuous/5.plink")
 
 rm(list=ls())
 library(data.table)
 
+# make function to make ped-map file
 pid=NULL;mid=NULL;sex=NULL;phe=NULL
 make_ped <- function(name,pid=NULL,mid=NULL,sex=NULL,phe=NULL){
   setwd(mldose_mlinfo)
   print("Read file")
-  dose <- fread(paste(name,".mldose",sep=""));n <- nrow(dose)
-  info <- fread(paste(name,".mlinfo",sep=""))
+  dose <- fread(paste0("ukb_imp_",name,".mldose"));n <- nrow(dose)
+  info <- fread(paste0("ukb_imp_",name,".mlinfo"))
   fid <- dose[,1];iid <- dose[,2]
   dose <- as.matrix(dose)
   
@@ -31,14 +32,14 @@ make_ped <- function(name,pid=NULL,mid=NULL,sex=NULL,phe=NULL){
   
   print("save file")
   setwd(saving_point)
-  fwrite(tmp,paste(name,".ped",sep=""),quote=F,row.names=F,col.names = F)
+  fwrite(tmp,paste0("ukb_imp_",name,".ped"),quote=F,row.names=F,col.names = F)
 }
 
 make_map <- function(name){
   setwd(dose_info)
-  info = as.matrix(fread(paste(name,".info",sep="")))
+  info = as.matrix(fread(paste0("ukb_imp_",name,".info")))
   setwd(mldose_mlinfo)
-  info2 <- fread(paste(name,".mlinfo",sep=""))
+  info2 <- fread(paste0("ukb_imp_",name,".mlinfo"))
   chr_bp <- matrix(as.numeric(info[,c(1,4)]),ncol=2)
   
   tmp <- floor(chr_bp[,2]/1000000)
@@ -46,14 +47,15 @@ make_map <- function(name){
   colnames(chr_bp) <- NULL
   
   setwd(saving_point)
-  fwrite(chr_bp,paste(name,".map",sep=""),quote=F,row.names=F,col.names = F)
+  fwrite(chr_bp,paste0("ukb_imp_",name,".map"),quote=F,row.names=F,col.names = F)
 }
 
-dose_info <- "/storage/lab/psh/simulation_n10K_p10K_continuous/3.dose/"
-mldose_mlinfo <- "/storage/lab/psh/simulation_n10K_p10K_continuous/3.dose"
-saving_point <- "/storage/lab/psh/simulation_n10K_p10K_continuous/4.plink"
+# run function to make ped-map file
+dose_info <- "/storage0/lab/psh/simulation_n10K_p10K_continuous/3.dose_info/"
+mldose_mlinfo <- "/storage0/lab/psh/simulation_n10K_p10K_continuous/4.mldose_mlinfo"
+saving_point <- "/storage0/lab/psh/simulation_n10K_p10K_continuous/5.plink"
 
-for(case in c("train","test")){
+for(case in c("training","testing")){
   make_map(case)
   make_ped(case)
 }
